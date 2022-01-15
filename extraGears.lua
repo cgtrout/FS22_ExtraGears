@@ -273,9 +273,9 @@ function Motorized:onRegisterActionEvents(isActiveForInput, isActiveForInputIgno
 end
 
 function ExtraGears:onEnterVehicle()
-    print("ExtraGears -- onEnter")
+    --print("ExtraGears -- onEnter")
     if ExtraGears.reset_on_enter then
-        print("ExtraGears -- onEnter -> reset to 0")
+        --print("ExtraGears -- onEnter -> reset to 0")
         ExtraGears.shiftGearOverrideAmount = 0
         ExtraGears.lastshiftGearOverrideAmount = 0
     end
@@ -283,10 +283,10 @@ end
 
 --called after Motorized:actionEventDirectionChange (as appended function)
 function ExtraGears:actionEventDirectionChange(self, actionName, inputValue, callbackState, isAnalog)
-    print("ExtraGears -- actionEventDirectionChange")
+    --print("ExtraGears -- actionEventDirectionChange")
 
     if ExtraGears.reset_on_direction_change then
-        print("ExtraGears - direction change -> reset to 0")
+        --print("ExtraGears - direction change -> reset to 0")
         ExtraGears.shiftGearOverrideAmount = 0
         ExtraGears.lastshiftGearOverrideAmount = 0
     end
@@ -294,7 +294,7 @@ end
 
 -- dataS\scripts\vehicles\specializations\events\MotorGearShiftEvent.lua
 function MotorGearShiftEvent:shiftGearOverrideStep(actionName, keyStatus, shiftAmount, arg4, arg5, two)
-    print("ExtraGears -- shift add/remove" ..tostring(shiftAmount));
+    --print("ExtraGears -- shift add/remove" ..tostring(shiftAmount));
     if nil == ExtraGears.lastshiftGearOverrideAmount then
         ExtraGears.lastshiftGearOverrideAmount = 0
     end
@@ -316,7 +316,7 @@ end
 -- keyStatus 1 down
 -- keyStatus 0 released
 function MotorGearShiftEvent:shiftGearOverride(actionName, keyStatus, shiftAmount, arg4, arg5, two)
-    print("ExtraGears -- shift amount " ..tostring(actionName) .." " ..tostring(keyStatus) .." " ..tostring(shiftAmount) .." " ..tostring(arg4) .." " ..tostring(arg5) .." " ..tostring(two))
+    --print("ExtraGears -- shift amount " ..tostring(actionName) .." " ..tostring(keyStatus) .." " ..tostring(shiftAmount) .." " ..tostring(arg4) .." " ..tostring(arg5) .." " ..tostring(two))
 
     --local spec = self.spec_ExtraGears
     if nil == ExtraGears.lastshiftGearOverrideAmount then
@@ -326,7 +326,7 @@ function MotorGearShiftEvent:shiftGearOverride(actionName, keyStatus, shiftAmoun
     else
         ExtraGears.shiftGearOverrideAmount = shiftAmount
     end
-    print("ExtraGears -- shift amount now " ..tostring(ExtraGears.shiftGearOverrideAmount))
+    --print("ExtraGears -- shift amount now " ..tostring(ExtraGears.shiftGearOverrideAmount))
     ExtraGears.lastshiftGearOverrideAmount = ExtraGears.shiftGearOverrideAmount
 end
 
@@ -344,7 +344,7 @@ function MotorGearShiftEvent.sendEvent(vehicle, shiftType, shiftValue)
             if nill == ExtraGears.shiftGearOverrideAmount then
                 ExtraGears.shiftGearOverrideAmount = 0
             end
-             print("ExtraGears - in shiftevent sendEvent - " ..tostring(shiftValue) .." | " ..tostring(ExtraGears.shiftGearOverrideAmount));
+            --print("ExtraGears - in shiftevent sendEvent - " ..tostring(shiftValue) .." | " ..tostring(ExtraGears.shiftGearOverrideAmount));
             -- is the stick in neutral?
             -- only bump if not in neutral
 
