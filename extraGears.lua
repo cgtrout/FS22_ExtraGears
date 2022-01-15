@@ -97,15 +97,6 @@ function ExtraGears:loadXML(fileName)
     print("ExtraGears -- loaded " ..tostring(self.position.x) .." " ..tostring(self.position.x) .." " ..tostring(self.reset_on_direction_change) .. tostring(self.reset_on_enter))
 end
 
-function ExtraGears:onEnterVehicle()
-    print("ExtraGears -- onEnter")
-    if ExtraGears.reset_on_enter then
-        print("ExtraGears -- onEnter -> reset to 0")
-        ExtraGears.shiftGearOverrideAmount = 0
-        ExtraGears.lastshiftGearOverrideAmount = 0
-    end
-end
-
 function ExtraGears:posOK(val)
     local val = tonumber(float)
     if val ~= nil and val >= 0 and val <= 1 then
@@ -281,6 +272,15 @@ function Motorized:onRegisterActionEvents(isActiveForInput, isActiveForInputIgno
     end
 end
 
+function ExtraGears:onEnterVehicle()
+    print("ExtraGears -- onEnter")
+    if ExtraGears.reset_on_enter then
+        print("ExtraGears -- onEnter -> reset to 0")
+        ExtraGears.shiftGearOverrideAmount = 0
+        ExtraGears.lastshiftGearOverrideAmount = 0
+    end
+end
+
 --called after Motorized:actionEventDirectionChange (as appended function)
 function ExtraGears:actionEventDirectionChange(self, actionName, inputValue, callbackState, isAnalog)
     print("ExtraGears -- actionEventDirectionChange")
@@ -329,8 +329,6 @@ function MotorGearShiftEvent:shiftGearOverride(actionName, keyStatus, shiftAmoun
     print("ExtraGears -- shift amount now " ..tostring(ExtraGears.shiftGearOverrideAmount))
     ExtraGears.lastshiftGearOverrideAmount = ExtraGears.shiftGearOverrideAmount
 end
-
-
 
 ---Broadcast event from server to all clients, if called on client call function on server and broadcast it to all clients
 -- @param table vehicle vehicle
