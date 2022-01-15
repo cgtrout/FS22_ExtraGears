@@ -12,6 +12,10 @@ ExtraGears.default = {}
 ExtraGears.default.position = {}
 ExtraGears.default.position.x = 0.96
 ExtraGears.default.position.y = 0.01
+ExtraGears.default.reset_on_direction_change = false
+ExtraGears.default.reset_on_leave = false
+
+local xmlFilePath = getUserProfileAppPath() .. "modSettings/extraGears.xml"
 
 function ExtraGears.prerequisitesPresent(specializations)
     return true
@@ -24,39 +28,80 @@ end
 
 function ExtraGears:loadMap(name)
     print("ExtraGears -- loadMap for ExtraGears");
+    
+    -- Bind/append functions 
+    FSCareerMissionInfo.saveToXMLFile = Utils.appendedFunction(FSCareerMissionInfo.saveToXMLFile, ExtraGears.saveToXMLFile)
+    Player.onLeave = Utils.appendedFunction(Player.onLeave, ExtraGears.onLeave)
+    Motorized.actionEventDirectionChange = Utils.appendedFunction(Motorized.actionEventDirectionChange, ExtraGears.actionEventDirectionChange)
+
     self.position = {}
     self.position.x = ExtraGears.default.position.x
     self.position.y = ExtraGears.default.position.y
+    self.reset_on_direction_change = ExtraGears.default.reset_on_direction_change
+    self.reset_on_leave = ExtraGears.default.reset_on_leave
 
     if g_dedicatedServerInfo == nil then
-        local xmlFile = getUserProfileAppPath() .. "modSettings/extraGears.xml"
-         if not fileExists(xmlFile) then
-            if not fileExists(xmlFile) then
-                self:defaultXML(xmlFile)
+         if not fileExists(xmlFilePath) then
+            if not fileExists(xmlFilePath) then
+                self:defaultXML(xmlFilePath)
             end
-            self:loadXML(xmlFile)
+            self:loadXML(xmlFilePath)
         else
-            self:loadXML(xmlFile)
+            self:loadXML(xmlFilePath)
         end
     end
 end
 
+function ExtraGears:defaultXML(fileName)
+    print("ExtraGears - Make Default Config File " ..tostring(fileName))
+    local xml = createXMLFile("ExtraGears", fileName, "ExtraGears")
+    setXMLFloat(xml, "ExtraGears.position#x", ExtraGears.default.position.x)
+    setXMLFloat(xml, "ExtraGears.position#y", ExtraGears.default.position.y)
+    setXMLBool(xml, "ExtraGears.reset_settings#reset_on_direction_change", ExtraGears.default.reset_on_direction_change)
+    setXMLBool(xml, "ExtraGears.reset_settings#reset_on_leave", ExtraGears.default.reset_on_leave)
+    saveXMLFile(xml)
+    delete(xml)
+end
+
+function ExtraGears:saveToXMLFile(missionInfo)
+    print("ExtraGears - saveToXMLFile ")
+    local xml = createXMLFile("ExtraGears", xmlFilePath, "ExtraGears")
+    setXMLFloat(xml, "ExtraGears.position#x", ExtraGears.position.x)
+    setXMLFloat(xml, "ExtraGears.position#y", ExtraGears.position.y)
+    setXMLBool(xml, "ExtraGears.reset_settings#reset_on_direction_change", ExtraGears.reset_on_direction_change)
+    setXMLBool(xml, "ExtraGears.reset_settings#reset_on_leave", ExtraGears.reset_on_leave)
+    saveXMLFile(xml)
+    delete(xml)
+end
+
 function ExtraGears:loadXML(fileName)
-    print("ExtraGears -- loading XML " ..tostring(fileName));
+    print("ExtraGears -- loading XML " ..tostring(fileName))
     local xml = loadXMLFile("ExtraGears", fileName)
     local x = Utils.getNoNil(getXMLFloat(xml, "ExtraGears.position#x"), ExtraGears.position.x)
     if (self:posOK(x)) then
         self.position.x = x
     else
-        self.position.x = ExtraGears.default.position.x;
+        self.position.x = ExtraGears.default.position.x
     end
     local y = Utils.getNoNil(getXMLFloat(xml, "ExtraGears.position#y"), ExtraGears.position.y)
     if (self:posOK(y)) then
         self.position.y = y
     else
-        self.position.y = ExtraGears.default.position.y;
+        self.position.y = ExtraGears.default.position.y
     end
-    print("ExtraGears -- loaded " ..tostring(self.position.x) .." " ..tostring(self.position.x))
+
+    self.reset_on_direction_change = Utils.getNoNil(getXMLBool(xml, "ExtraGears.reset_settings#reset_on_direction_change"), ExtraGears.reset_on_direction_change)
+    self.reset_on_leave = Utils.getNoNil(getXMLBool(xml, "ExtraGears.reset_settings#reset_on_leave"), ExtraGears.reset_on_leave)
+
+    print("ExtraGears -- loaded " ..tostring(self.position.x) .." " ..tostring(self.position.x) .." " ..tostring(self.reset_on_direction_change) .. tostring(self.reset_on_leave))
+end
+
+function ExtraGears:onLeave()
+    --print("ExtraGears -- onLeave")
+    if ExtraGears.reset_on_leave then
+        --print("ExtraGears -- onLeave -> reset to 0")
+        ExtraGears.shiftGearOverrideAmount = 0
+    end
 end
 
 function ExtraGears:posOK(val)
@@ -66,14 +111,6 @@ function ExtraGears:posOK(val)
     else
         return false
     end
-end
-function ExtraGears:defaultXML(fileName)
-    print("ExtraGears - Make Default Config File " ..tostring(fileName))
-    local xml = createXMLFile("ExtraGears", fileName, "ExtraGears")
-    setXMLFloat(xml, "ExtraGears.position#x", ExtraGears.default.position.x)
-    setXMLFloat(xml, "ExtraGears.position#y", ExtraGears.default.position.y)
-    saveXMLFile(xml)
-    delete(xml)
 end
 
 function ExtraGears:onDraw(dt)
@@ -242,9 +279,20 @@ function Motorized:onRegisterActionEvents(isActiveForInput, isActiveForInputIgno
     end
 end
 
+--called after Motorized:actionEventDirectionChange (as appended function)
+function ExtraGears:actionEventDirectionChange(self, actionName, inputValue, callbackState, isAnalog)
+    print("ExtraGears -- actionEventDirectionChange")
+
+    --print("ExtraGears - direction change")
+    if ExtraGears.reset_on_direction_change then
+        --print("ExtraGears - direction change -> reset to 0")
+        ExtraGears.shiftGearOverrideAmount = 0
+    end
+end
+
 -- dataS\scripts\vehicles\specializations\events\MotorGearShiftEvent.lua
 function MotorGearShiftEvent:shiftGearOverrideStep(actionName, keyStatus, shiftAmount, arg4, arg5, two)
-    print("ExtraGears -- shift add/remove" ..tostring(shiftAmount));
+    --print("ExtraGears -- shift add/remove" ..tostring(shiftAmount));
     if nil == ExtraGears.lastshiftGearOverrideAmount then
         ExtraGears.lastshiftGearOverrideAmount = 0
     end
@@ -276,9 +324,10 @@ function MotorGearShiftEvent:shiftGearOverride(actionName, keyStatus, shiftAmoun
     else
         ExtraGears.shiftGearOverrideAmount = shiftAmount
     end
-    print("ExtraGears -- shift amount now " ..tostring(ExtraGears.shiftGearOverrideAmount))
+    --print("ExtraGears -- shift amount now " ..tostring(ExtraGears.shiftGearOverrideAmount))
     ExtraGears.lastshiftGearOverrideAmount = ExtraGears.shiftGearOverrideAmount
 end
+
 
 
 ---Broadcast event from server to all clients, if called on client call function on server and broadcast it to all clients
