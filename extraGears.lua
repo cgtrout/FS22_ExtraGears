@@ -13,7 +13,7 @@ ExtraGears.default.position = {}
 ExtraGears.default.position.x = 0.96
 ExtraGears.default.position.y = 0.01
 ExtraGears.default.reset_on_direction_change = false
-ExtraGears.default.reset_on_leave = false
+ExtraGears.default.reset_on_enter = false
 
 local xmlFilePath = getUserProfileAppPath() .. "modSettings/extraGears.xml"
 
@@ -31,14 +31,15 @@ function ExtraGears:loadMap(name)
     
     -- Bind/append functions 
     FSCareerMissionInfo.saveToXMLFile = Utils.appendedFunction(FSCareerMissionInfo.saveToXMLFile, ExtraGears.saveToXMLFile)
-    Player.onLeave = Utils.appendedFunction(Player.onLeave, ExtraGears.onLeave)
+    g_currentMission.onEnterVehicle = Utils.appendedFunction(g_currentMission.onEnterVehicle, ExtraGears.onEnterVehicle)
+    
     Motorized.actionEventDirectionChange = Utils.appendedFunction(Motorized.actionEventDirectionChange, ExtraGears.actionEventDirectionChange)
 
     self.position = {}
     self.position.x = ExtraGears.default.position.x
     self.position.y = ExtraGears.default.position.y
     self.reset_on_direction_change = ExtraGears.default.reset_on_direction_change
-    self.reset_on_leave = ExtraGears.default.reset_on_leave
+    self.reset_on_enter = ExtraGears.default.reset_on_enter
 
     if g_dedicatedServerInfo == nil then
          if not fileExists(xmlFilePath) then
@@ -58,7 +59,7 @@ function ExtraGears:defaultXML(fileName)
     setXMLFloat(xml, "ExtraGears.position#x", ExtraGears.default.position.x)
     setXMLFloat(xml, "ExtraGears.position#y", ExtraGears.default.position.y)
     setXMLBool(xml, "ExtraGears.reset_settings#reset_on_direction_change", ExtraGears.default.reset_on_direction_change)
-    setXMLBool(xml, "ExtraGears.reset_settings#reset_on_leave", ExtraGears.default.reset_on_leave)
+    setXMLBool(xml, "ExtraGears.reset_settings#reset_on_enter", ExtraGears.default.reset_on_enter)
     saveXMLFile(xml)
     delete(xml)
 end
@@ -69,7 +70,7 @@ function ExtraGears:saveToXMLFile(missionInfo)
     setXMLFloat(xml, "ExtraGears.position#x", ExtraGears.position.x)
     setXMLFloat(xml, "ExtraGears.position#y", ExtraGears.position.y)
     setXMLBool(xml, "ExtraGears.reset_settings#reset_on_direction_change", ExtraGears.reset_on_direction_change)
-    setXMLBool(xml, "ExtraGears.reset_settings#reset_on_leave", ExtraGears.reset_on_leave)
+    setXMLBool(xml, "ExtraGears.reset_settings#reset_on_enter", ExtraGears.reset_on_enter)
     saveXMLFile(xml)
     delete(xml)
 end
@@ -91,15 +92,15 @@ function ExtraGears:loadXML(fileName)
     end
 
     self.reset_on_direction_change = Utils.getNoNil(getXMLBool(xml, "ExtraGears.reset_settings#reset_on_direction_change"), ExtraGears.reset_on_direction_change)
-    self.reset_on_leave = Utils.getNoNil(getXMLBool(xml, "ExtraGears.reset_settings#reset_on_leave"), ExtraGears.reset_on_leave)
+    self.reset_on_enter = Utils.getNoNil(getXMLBool(xml, "ExtraGears.reset_settings#reset_on_enter"), ExtraGears.reset_on_enter)
 
-    print("ExtraGears -- loaded " ..tostring(self.position.x) .." " ..tostring(self.position.x) .." " ..tostring(self.reset_on_direction_change) .. tostring(self.reset_on_leave))
+    print("ExtraGears -- loaded " ..tostring(self.position.x) .." " ..tostring(self.position.x) .." " ..tostring(self.reset_on_direction_change) .. tostring(self.reset_on_enter))
 end
 
-function ExtraGears:onLeave()
-    --print("ExtraGears -- onLeave")
-    if ExtraGears.reset_on_leave then
-        --print("ExtraGears -- onLeave -> reset to 0")
+function ExtraGears:onEnterVehicle()
+    --print("ExtraGears -- onEnter")
+    if ExtraGears.reset_on_enter then
+        --print("ExtraGears -- onEnter -> reset to 0")
         ExtraGears.shiftGearOverrideAmount = 0
     end
 end
