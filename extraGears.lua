@@ -24,17 +24,16 @@ end
 function ExtraGears.registerEventListeners(vehicleType)
     print("ExtraGears -- registerEventListeners for ExtraGears" ..tostring(vehicleType));
     SpecializationUtil.registerEventListener(vehicleType, "onDraw", ExtraGears)
+    SpecializationUtil.registerEventListener(vehicleType, "onEnterVehicle", ExtraGears)
+    SpecializationUtil.registerEventListener(vehicleType, "onGearDirectionChanged", ExtraGears)
 end
 
 function ExtraGears:loadMap(name)
     print("ExtraGears -- loadMap for ExtraGears");
     
-    -- Bind/append functions 
+    -- Bind saveToXMLFile so that save is called once rather than once per vehicle
     FSCareerMissionInfo.saveToXMLFile = Utils.appendedFunction(FSCareerMissionInfo.saveToXMLFile, ExtraGears.saveToXMLFile)
-    g_currentMission.onEnterVehicle = Utils.appendedFunction(g_currentMission.onEnterVehicle, ExtraGears.onEnterVehicle)
     
-    Motorized.actionEventDirectionChange = Utils.appendedFunction(Motorized.actionEventDirectionChange, ExtraGears.actionEventDirectionChange)
-
     self.position = {}
     self.position.x = ExtraGears.default.position.x
     self.position.y = ExtraGears.default.position.y
@@ -281,12 +280,11 @@ function ExtraGears:onEnterVehicle()
     end
 end
 
---called after Motorized:actionEventDirectionChange (as appended function)
-function ExtraGears:actionEventDirectionChange(self, actionName, inputValue, callbackState, isAnalog)
-    --print("ExtraGears -- actionEventDirectionChange")
+function ExtraGears:onGearDirectionChanged()
+    --print("ExtraGears -- onGearDirectionChanged")
 
     if ExtraGears.reset_on_direction_change then
-        --print("ExtraGears - direction change -> reset to 0")
+        --print("ExtraGears - onGearDirectionChanged -> reset to 0")
         ExtraGears.shiftGearOverrideAmount = 0
         ExtraGears.lastshiftGearOverrideAmount = 0
     end
